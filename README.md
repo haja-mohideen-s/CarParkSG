@@ -1,5 +1,5 @@
 # SG Car Park
-[SG Car Park](http://sgcarpark.azurewebsites.com) is a simple web app used to find the available parking slots in and around Singapore. 
+[SG Car Park](https://sgcarpark.azurewebsites.net/) is a simple web app used to find the available parking slots in and around Singapore. 
 
 ![SG Car Park](https://repository-images.githubusercontent.com/470565866/0fc45675-255b-494d-abeb-10b9193e2a32)
 ## Features

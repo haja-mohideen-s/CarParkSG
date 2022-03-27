@@ -1,0 +1,252 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@model CarParkSG.Models.ViewModel.CarParkDataModelView
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-sm-4 mb-1">
+            <span class="lead">Find nearest car park with ease now&#128516;</span><br />
+            <span id="spnResult"></span>
+        </div>
+        <div class="col-12 d-md-none text-center mb-2 d-sm-none d-block">
+            <a class="btn btn-primary" onclick="ShowFilters()" title="Filter">
+                <i class="bi bi-gear-wide-connected"></i>
+            </a>
+
+            <a class="btn-primary btn" href="@Url.Action("Index")" title="Refresh">
+                <i class="bi bi-arrow-clockwise"></i>
+            </a>
+
+        </div>
+        <div class="col-12 col-md-8 mb-2 d-none d-sm-block" id="SearchParameters">
+            <div class="row">
+                <div class="col-6 col-sm">
+                    <div class="form-floating">
+                        <select class="form-select" id="CarparkType" data-bs-type="car_park_type" onchange="UpdateMap();">
+                            <option selected>All</option>
+                            @if (Model.car_park_type != null)
+                            {
+                                foreach (var i in Model.car_park_type)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                        <label for="ddl2">Type</label>
+                    </div>
+                </div>
+                <div class="col-6 col-sm">
+                    <div class="form-floating">
+                        <select class="form-select" id="FreeParking" data-bs-type="free_parking" onchange="UpdateMap();">
+                            <option selected>All</option>
+                            @if (Model.free_parking != null)
+                            {
+                                foreach (var i in Model.free_parking)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                        <label for="ddl2">Free</label>
+                    </div>
+                </div>
+                <div class="col-6 col-sm">
+                    <div class="form-floating">
+                        <select class="form-select" id="BasementParking" data-bs-type="car_park_basement" onchange="UpdateMap();">
+                            <option selected>All</option>
+                            @if (Model.car_park_basement != null)
+                            {
+                                foreach (var i in Model.car_park_basement)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                        <label for="ddl2">Basement?</label>
+                    </div>
+                </div>
+                <div class="col-6 col-sm">
+                    <div class="form-floating">
+                        <select class="form-select" id="NightParking" data-bs-type="night_parking" onchange="UpdateMap();">
+                            <option selected>All</option>
+                            @if (Model.night_parking != null)
+                            {
+                                foreach (var i in Model.night_parking)
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                        <label for="ddl2">Night</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<section id="SGCarParkMap" class="Full-page" style="flex:1;">
+</section>
+<div class="modal fade" id="AttributionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalTitle">Attribution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li><a href="https://www.onemap.gov.sg/main/v2/" target="_blank">OneMap </a>- Mapping provider - Read license <a href="https://www.onemap.gov.sg/legal/opendatalicence.html" target="_blank">here</a>.</li>
+                    <li><a href="https://leafletjs.com/" target="_blank">Leaflet</a> - Mobile friendly interactive mapping library.</li>
+                    <li><a href="https://jsonata.org/" target="_blank">JSONata</a> - JSON query and transformation language.</li>
+                    <li><a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank">Leaflet.markercluster</a> - Provides beautiful animated marker clustering functionality for Leaflet.</li>
+                    <li><a href="https://github.com/lennardv2/Leaflet.awesome-markers" target="_blank">Leaflet.awesome-markers</a> - Colorful markers for Leaflet.</li>
+                    <li><a href="https://smeijer.github.io/leaflet-geosearch/" target="_blank">Leaflet.Geosearch</a> - A geocoding library for Leaflet.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/jsonata/jsonata.min.js"></script>
+<script src="https://cdn.onemap.sg/leaflet/onemap-leaflet.js"></script>
+<script src="~/js/leaflet.markercluster.js"></script>
+<script src="~/js/leaflet.awesome-markers.min.js"></script>
+<script src="https://unpkg.com/leaflet-geosearch@3.3.2/dist/geosearch.umd.js"></script>
+<script>
+    let carparkDetails = @Html.Raw(Model.carParkDetail);
+
+    //Set default map with centering
+    var center = L.bounds([1.56073, 104.11475], [1.16, 103.502]).getCenter();
+    var map = L.map('SGCarParkMap').setView([center.x, center.y], 13);
+
+    var basemap = L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
+        detectRetina: true,
+        maxZoom: 18,
+        minZoom: 11
+    });
+    //Set the maps boundary
+    map.setMaxBounds([[1.56073, 104.1147], [1.16, 103.502]]);
+    basemap.addTo(map);
+    L.Icon.Default.imagePath = '../../Images/';
+
+    const search = new GeoSearch.GeoSearchControl({
+        provider: new GeoSearch.OpenStreetMapProvider(),
+    });
+
+    map.addControl(search);
+
+     var markers = L.markerClusterGroup();
+
+    //display the car parks as layers
+    AddMarkers(jsonata('result.records[total_available_lot>0]').evaluate(carparkDetails));
+
+    function AddMarkers(data)
+    {
+        //Clear any existing layers
+        markers.clearLayers();
+        let i =1;
+        //create a new layer with updated marker list
+        $.each(data,function(){
+            var latlng = SVY21Convertor.prototype.ConvertEN2LL(this.x_coord,this.y_coord);
+
+            var redMarker = L.AwesomeMarkers.icon({
+              markerColor: 'red',
+              html: this.total_available_lot
+            });
+
+           var markerCP = L.marker([latlng[1],latlng[0]],{
+            riseOnHover: true,
+            icon : redMarker
+            });
+
+            markers.addLayer(markerCP);
+
+            var popup = L.popup().setContent(getMarkerContent(this,latlng));
+
+          markerCP.bindPopup(popup);
+          i++;
+        });
+        map.addLayer(markers);
+        $('#spnResult').text(data.length.toString() +' locations');
+    }
+    //get current location
+    getLocation();
+
+    function getMarkerContent(item,latlng){
+        let webUrl = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${latlng[1]},${latlng[0]}`;
+        return "<h6>"+item.address+"</h6><p>Details:</p><p>"+item.available_lots.join('<br/>')+"</p><p>"+
+        "<a href='"+webUrl+"' target='_blank'>Direction</a></p>";
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+           navigator.geolocation.getCurrentPosition(showPosition);
+        }
+    }
+
+    //show current location on map
+    function showPosition(position) {
+         var blueMarker = L.AwesomeMarkers.icon({
+              markerColor: 'blue'
+            });
+      marker = new L.Marker([position.coords.latitude, position.coords.longitude], {bounceOnAdd: true,icon : blueMarker}).addTo(map);
+      map.setView([position.coords.latitude, position.coords.longitude], 14);
+    }
+
+    function UpdateMap()
+    {
+        //get all the variables
+        var search = {
+            'night' : $('#NightParking').val(),
+            'basement' : $('#BasementParking').val(),
+            'free' : $('#FreeParking').val(),
+            'cptype' : $('#CarparkType').val()
+        }
+
+        var jsonataArgs = (search.free == 'All' ? "" : "[free_parking='"+search.free+"']");
+        jsonataArgs = jsonataArgs + (search.cptype == 'All' ? "" : "[car_park_type='"+search.cptype+"']");
+        jsonataArgs = jsonataArgs + (search.night == 'All' ? "" : "[night_parking='"+search.night+"']");
+        jsonataArgs = jsonataArgs + (search.basement == 'All' ? "" : "[car_park_basement='"+search.basement+"']");
+
+        var filteredData = jsonata('result.records'+jsonataArgs).evaluate(carparkDetails);
+        AddMarkers(filteredData);
+    }
+
+    function ShowAllOrAvailable(){
+        clearFilter();
+     var filteredData;
+     if($('#chkAvailableLots').prop('checked')){
+        //Show only available lots
+       filteredData= jsonata('result.records[total_available_lot>0]').evaluate(carparkDetails);
+     }
+     else
+     {
+       filteredData=  jsonata('result.records').evaluate(carparkDetails);
+     }
+     AddMarkers(filteredData);
+    }
+
+    function clearFilter()
+    {
+        $('#NightParking').val('All');
+        $('#BasementParking').val('All');
+        $('#FreeParking').val('All');
+        $('#CarparkType').val('All');
+    }
+    function ShowFilters()
+    {
+        if($('#SearchParameters').is(':visible'))
+        {
+            $('#SearchParameters').addClass('d-none');
+        }
+        else
+        {
+        $('#SearchParameters').removeClass('d-none');
+        }
+    }
+</script>
+    }

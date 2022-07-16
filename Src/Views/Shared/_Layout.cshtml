@@ -15,13 +15,12 @@
     <link rel="stylesheet" href="~/css/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <style>
-    .number-icon
-    {
-        background-image: url("images/number-marker-icon.png");
-        text-align:center;
-        color:White;    
-    }   
-</style>
+        .number-icon {
+            background-image: url("images/number-marker-icon.png");
+            text-align: center;
+            color: White;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column h-100">
     <main class="flex-shrink-0">
@@ -30,7 +29,7 @@
                 <div class="col-12 col-sm-6">
                     <span class="title-text">SG Car Parks</span>
                 </div>
-                <hr/>
+                <hr />
                 <div class="col-12 col-sm-6">
                     <div class="input-group">
                         <div class="form-check form-switch">
@@ -43,9 +42,15 @@
         </div>
     </main>
     @RenderBody()
-    <footer class="footer mt-auto py-3 bg-light">
+    <footer class="footer mt-auto py-2 bg-light">
         <div class="container text-center">
-            <span class="text-muted">Created by Haja Mohideen. Attributions & license <a data-bs-toggle="modal" data-bs-target="#AttributionModal">here</a>.</span>
+            <div class="row">
+                <div class="col-md-6 col-xs-12 text-xs-center text-md-start"><span class="text-muted">Created by <a href="https://www.linkedin.com/in/haja-mohideen/" target="_blank">Haja Mohideen</a>.</span></div>
+                <div class="col-md-6 col-xs-12 text-xs-center text-md-end">
+                    <a class="btn-success btn-xs btn" data-bs-toggle="modal" data-bs-target="#AttributionModal">Attributions</a>
+                    <a class="btn-success btn-xs btn" href="https://github.com/haja-mohideen-s/SG-Car-Park" target="_blank" >Checkout on github</a>
+                </div>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
